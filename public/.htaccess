@@ -1,0 +1,30 @@
+# Disable directory browsing
+Options -Indexes
+Options +FollowSymlinks
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Capture Authorization Header (PENTING: Harus di atas)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # 2. Akses Langsung untuk folder uploads (Agar gambar tidak error)
+    RewriteRule ^uploads/ - [L]
+
+    # 3. Handle Trailing Slashes
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # 4. Redirect ke index.php jika file fisik tidak ditemukan
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([\s\S]*)$ index.php/$1 [L,NC,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 404 index.php
+</IfModule>
+
+ServerSignature Off
