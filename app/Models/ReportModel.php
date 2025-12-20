@@ -28,17 +28,10 @@ class ReportModel extends Model
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
-    
-    // ❌ HAPUS afterFind - menyebabkan conflict dengan insert/update
-    // ✅ Pakai manual addPhotoUrl() saja
-    
-    /**
-     * Helper untuk menambahkan photo_url
-     */
+
     private function addPhotoUrl(&$data)
     {
-        // Ganti dengan IP Anda - SESUAIKAN!
-        $baseUrl = base_url(); // atau force: 'http://192.168.1.100/rumahku-backend/public/'
+        $baseUrl = base_url();
         
         if (!empty($data['photo'])) {
             $data['photo_url'] = $baseUrl . 'uploads/reports/' . $data['photo'];
@@ -86,7 +79,6 @@ class ReportModel extends Model
         
         $reports = $builder->findAll();
         
-        // Tambahkan photo_url untuk semua records
         foreach ($reports as &$report) {
             $this->addPhotoUrl($report);
         }

@@ -16,9 +16,6 @@ class ProjectModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     
-    /**
-     * Get projects dengan relasi user
-     */
     public function getProjectsWithUsers($where = [])
     {
         $builder = $this->db->table($this->table);
@@ -37,9 +34,6 @@ class ProjectModel extends Model
         return $builder->get()->getResultArray();
     }
     
-    /**
-     * Get single project dengan relasi
-     */
     public function getProjectWithUsers($id)
     {
         $builder = $this->db->table($this->table);

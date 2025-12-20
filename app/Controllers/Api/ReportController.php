@@ -20,10 +20,6 @@ class ReportController extends BaseController
         $this->projectModel = new ProjectModel();
     }
     
-    /**
-     * Create report (Mandor only) - WITH PROPER PHOTO UPLOAD
-     * POST /api/reports
-     */
     public function create()
     {
         $user = $this->request->userData ?? null;
@@ -49,7 +45,6 @@ class ReportController extends BaseController
             return $this->failValidationErrors($this->validator->getErrors());
         }
         
-        // Cek akses ke project
         $project = $this->projectModel->find($this->request->getVar('project_id'));
         if (!$project) {
             return $this->failNotFound('Project tidak ditemukan');
@@ -59,12 +54,10 @@ class ReportController extends BaseController
             return $this->failForbidden('Anda bukan mandor di project ini');
         }
         
-        // Handle photo upload
         $photoPath = null;
         $photo = $this->request->getFile('photo');
         
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
-            // Validasi tambahan
             if (!in_array($photo->getMimeType(), ['image/jpeg', 'image/jpg', 'image/png'])) {
                 return $this->failValidationErrors('File harus berupa gambar (jpg, jpeg, png)');
             }
@@ -72,12 +65,10 @@ class ReportController extends BaseController
             $newName = $photo->getRandomName();
             $uploadPath = FCPATH . 'uploads/reports/';
             
-            // Buat folder jika belum ada
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
             
-            // Move file
             if ($photo->move($uploadPath, $newName)) {
                 $photoPath = $newName;
             } else {
@@ -111,10 +102,6 @@ class ReportController extends BaseController
         return $this->failServerError('Gagal membuat laporan');
     }
     
-    /**
-     * Get reports by project
-     * GET /api/reports/project/{project_id}
-     */
     public function getByProject($projectId)
     {
         $user = $this->request->userData ?? null;
@@ -125,7 +112,6 @@ class ReportController extends BaseController
             return $this->failNotFound('Project tidak ditemukan');
         }
         
-        // Check access
         if ($user->role !== 'admin') {
             $hasAccess = ($project['user_id'] == $user->id) ||
                          ($project['kepala_proyek_id'] == $user->id) ||
@@ -143,11 +129,7 @@ class ReportController extends BaseController
             'data' => $reports
         ]);
     }
-    
-    /**
-     * Get single report
-     * GET /api/reports/{id}
-     */
+ 
     public function show($id)
     {
         $report = $this->reportModel->getReportWithRelations($id);
@@ -161,11 +143,7 @@ class ReportController extends BaseController
             'data' => $report
         ]);
     }
-    
-    /**
-     * Verify report (Kepala Proyek only)
-     * PUT /api/reports/{id}/verify
-     */
+
     public function verify($id)
     {
         $user = $this->request->userData ?? null;

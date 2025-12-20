@@ -16,9 +16,6 @@ class MaterialModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     
-    /**
-     * Get material requests dengan relasi
-     */
     public function getMaterialsWithRelations($where = [])
     {
         $builder = $this->db->table($this->table);
@@ -39,9 +36,6 @@ class MaterialModel extends Model
         return $builder->get()->getResultArray();
     }
     
-    /**
-     * Get single material request dengan relasi
-     */
     public function getMaterialWithRelations($id)
     {
         $builder = $this->db->table($this->table);

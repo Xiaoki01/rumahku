@@ -14,13 +14,8 @@ class ProjectController extends BaseController
         $this->projectModel = new ProjectModel();
     }
     
-    /**
-     * Get all projects berdasarkan role
-     * GET /api/projects
-     */
     public function index()
     {
-        // PERBAIKAN: Gunakan 'userData' sesuai dengan AuthController sebelumnya
         $user = $this->request->userData ?? null;
 
         if (!$user) {
@@ -32,10 +27,8 @@ class ProjectController extends BaseController
         
         $where = [];
         
-        // Filter berdasarkan role
         switch ($user->role) {
             case 'admin':
-                // Admin lihat semua
                 break;
             case 'pengguna':
                 $where['projects.user_id'] = $user->id;
@@ -48,7 +41,6 @@ class ProjectController extends BaseController
                 break;
         }
         
-        // Pastikan method ini ada di ProjectModel Anda
         $projects = $this->projectModel->getProjectsWithUsers($where);
         
         return $this->response->setJSON([
@@ -57,13 +49,8 @@ class ProjectController extends BaseController
         ]);
     }
     
-    /**
-     * Create new project
-     * POST /api/projects
-     */
     public function create()
     {
-        // PERBAIKAN: Gunakan userData
         $user = $this->request->userData ?? null;
         
         if (!$user || $user->role !== 'admin') {
@@ -119,10 +106,6 @@ class ProjectController extends BaseController
         ])->setStatusCode(500);
     }
     
-    /**
-     * Get single project
-     * GET /api/projects/{id}
-     */
     public function show($id)
     {
         // PERBAIKAN: Gunakan userData
@@ -141,9 +124,7 @@ class ProjectController extends BaseController
             ])->setStatusCode(404);
         }
         
-        // Check access
         if ($user->role !== 'admin') {
-            // Pastikan array key sesuai dengan output model
             $hasAccess = ($project['user_id'] == $user->id) ||
                          ($project['kepala_proyek_id'] == $user->id) ||
                          ($project['mandor_id'] == $user->id);
@@ -162,16 +143,10 @@ class ProjectController extends BaseController
         ]);
     }
     
-    /**
-     * Update project
-     * PUT /api/projects/{id}
-     */
     public function update($id)
     {
-        // PERBAIKAN: Gunakan userData
         $user = $this->request->userData ?? null;
         
-        // Hanya admin dan kepala proyek yang bisa update
         if (!$user || !in_array($user->role, ['admin', 'kepala_proyek'])) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -204,16 +179,10 @@ class ProjectController extends BaseController
         ])->setStatusCode(500);
     }
     
-    /**
-     * Delete project
-     * DELETE /api/projects/{id}
-     */
     public function delete($id)
     {
-        // PERBAIKAN: Gunakan userData
         $user = $this->request->userData ?? null;
         
-        // Hanya admin yang bisa delete
         if (!$user || $user->role !== 'admin') {
             return $this->response->setJSON([
                 'status' => 'error',

@@ -3,7 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use App\Models\MaterialModel; // SESUAIKAN: Pakai MaterialModel
+use App\Models\MaterialModel;
 use App\Models\ProjectModel;
 use CodeIgniter\API\ResponseTrait;
 
@@ -16,14 +16,10 @@ class MaterialController extends BaseController
     
     public function __construct()
     {
-        $this->materialModel = new MaterialModel(); // SESUAIKAN
+        $this->materialModel = new MaterialModel();
         $this->projectModel = new ProjectModel();
     }
     
-    /**
-     * Create material request (Mandor only)
-     * POST /api/materials
-     */
     public function create()
     {
         $user = $this->request->userData ?? null;
@@ -47,7 +43,6 @@ class MaterialController extends BaseController
             return $this->failValidationErrors($this->validator->getErrors());
         }
         
-        // Cek akses ke project
         $project = $this->projectModel->find($this->request->getVar('project_id'));
         
         if (!$project) {
@@ -71,7 +66,6 @@ class MaterialController extends BaseController
         if ($this->materialModel->insert($data)) {
             $materialId = $this->materialModel->getInsertID();
             
-            // SESUAIKAN METHOD MODEL: getMaterialWithRelations
             $material = $this->materialModel->getMaterialWithRelations($materialId); 
             
             return $this->respondCreated([
@@ -83,11 +77,7 @@ class MaterialController extends BaseController
         
         return $this->failServerError('Gagal membuat request material');
     }
-    
-    /**
-     * Get material requests by project
-     * GET /api/materials/project/{project_id}
-     */
+
     public function getByProject($projectId)
     {
         $user = $this->request->userData ?? null;
@@ -108,9 +98,6 @@ class MaterialController extends BaseController
             }
         }
         
-        // SESUAIKAN METHOD MODEL:
-        // Model Anda pakai getMaterialsWithRelations($where)
-        // Jadi kita kirim array where project_id
         $materials = $this->materialModel->getMaterialsWithRelations(['material_requests.project_id' => $projectId]);
         
         return $this->respond([
@@ -118,14 +105,9 @@ class MaterialController extends BaseController
             'data' => $materials
         ]);
     }
-    
-    /**
-     * Get single material request
-     * GET /api/materials/{id}
-     */
+
     public function show($id)
     {
-        // SESUAIKAN METHOD MODEL
         $material = $this->materialModel->getMaterialWithRelations($id);
         
         if (!$material) {
@@ -137,11 +119,7 @@ class MaterialController extends BaseController
             'data' => $material
         ]);
     }
-    
-    /**
-     * Approve material request
-     * PUT /api/materials/{id}/approve
-     */
+
     public function approve($id)
     {
         $user = $this->request->userData ?? null;
@@ -156,7 +134,6 @@ class MaterialController extends BaseController
             return $this->failNotFound('Request material tidak ditemukan');
         }
         
-        // Cek akses
         if ($user->role === 'kepala_proyek') {
             $project = $this->projectModel->find($material['project_id']);
             if ($project['kepala_proyek_id'] != $user->id) {
@@ -171,7 +148,6 @@ class MaterialController extends BaseController
         ];
         
         if ($this->materialModel->update($id, $data)) {
-            // SESUAIKAN METHOD MODEL
             $updated = $this->materialModel->getMaterialWithRelations($id);
             return $this->respond([
                 'status' => 'success',
@@ -183,10 +159,6 @@ class MaterialController extends BaseController
         return $this->failServerError('Gagal menyetujui request material');
     }
     
-    /**
-     * Reject material request
-     * PUT /api/materials/{id}/reject
-     */
     public function reject($id)
     {
         $user = $this->request->userData ?? null;
@@ -208,7 +180,6 @@ class MaterialController extends BaseController
         ];
         
         if ($this->materialModel->update($id, $data)) {
-            // SESUAIKAN METHOD MODEL
             $updated = $this->materialModel->getMaterialWithRelations($id);
             return $this->respond([
                 'status' => 'success',
