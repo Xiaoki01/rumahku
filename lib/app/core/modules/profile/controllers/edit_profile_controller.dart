@@ -72,7 +72,7 @@ class EditProfileController extends GetxController {
       return;
     }
 
-    // Konfirmasi sebelum update profile
+    // Konfirmasi
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Konfirmasi Update Profile'),
@@ -118,7 +118,6 @@ class EditProfileController extends GetxController {
       );
 
       if (response['status'] == 'success') {
-        // Update current user
         final updatedUser = UserModel.fromJson(response['data']);
         authService.updateCurrentUser(updatedUser);
 

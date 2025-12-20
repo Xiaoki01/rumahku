@@ -189,7 +189,6 @@ class ReportDetailView extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-// Photo (if exists)
                   if (report.hasPhoto) ...[
                     _InfoSection(
                       title: 'Foto Lapangan',
@@ -493,7 +492,7 @@ class ReportDetailView extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Verify Button (HANYA untuk Kepala Proyek)
+                  // Verify Button
                   if (authService.isKepalaProyek &&
                       report.status == 'menunggu') ...[
                     SizedBox(
@@ -523,7 +522,7 @@ class ReportDetailView extends StatelessWidget {
                     ),
                   ],
 
-                  // Info untuk role lain
+                  // Info role
                   if (authService.isPengguna) ...[
                     Container(
                       padding: const EdgeInsets.all(12),

@@ -147,7 +147,7 @@ class ProfileView extends GetView<ProfileController> {
 
                       const SizedBox(height: 24),
 
-                      // Tombol Tambah Akun - Hanya untuk Admin
+                      // Tombol Tambah Akun
                       if (user.role == 'admin') ...[
                         SizedBox(
                           width: double.infinity,

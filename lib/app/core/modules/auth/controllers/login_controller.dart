@@ -10,47 +10,31 @@ class LoginController extends GetxController {
   final ApiService apiService = Get.find<ApiService>();
   final AuthService authService = Get.find<AuthService>();
 
-  late TextEditingController emailController;
-  late TextEditingController passwordController;
-
+  final email = ''.obs;
+  final password = ''.obs;
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    emailController = TextEditingController();
-    passwordController = TextEditingController();
-  }
+  bool get isEmailValid => GetUtils.isEmail(email.value.trim());
+  bool get isPasswordValid => password.value.isNotEmpty;
+  bool get isFormValid => isEmailValid && isPasswordValid;
 
   void togglePasswordVisibility() {
     isPasswordVisible.toggle();
   }
 
+  void updateEmail(String value) {
+    email.value = value;
+  }
+
+  void updatePassword(String value) {
+    password.value = value;
+  }
+
   Future<void> login() async {
     if (!_validateForm()) return;
 
-    // Konfirmasi sebelum login
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Konfirmasi Login'),
-        content: Text(
-            'Apakah Anda yakin ingin login dengan email ${emailController.text.trim()}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            child: const Text('Ya, Login'),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-
-    if (confirmed != true) return;
+    if (isLoading.value) return;
 
     try {
       isLoading.value = true;
@@ -58,8 +42,8 @@ class LoginController extends GetxController {
       final response = await apiService.post(
         AppConstants.loginEndpoint,
         {
-          'email': emailController.text.trim(),
-          'password': passwordController.text,
+          'email': email.value.trim(),
+          'password': password.value,
         },
       );
 
@@ -71,36 +55,59 @@ class LoginController extends GetxController {
 
         _showSuccess('Login berhasil! Selamat datang, ${user.name}');
 
-        // Delay sedikit agar notifikasi terbaca
+        _clearForm();
+
         await Future.delayed(const Duration(milliseconds: 500));
+
         Get.offAllNamed(Routes.DASHBOARD);
       } else {
         _showError(response['message'] ?? 'Login gagal');
       }
     } catch (e) {
-      _showError('Email atau password salah');
+      _handleError(e);
     } finally {
       isLoading.value = false;
     }
   }
 
   bool _validateForm() {
-    if (emailController.text.trim().isEmpty) {
+    if (email.value.trim().isEmpty) {
       _showError('Email tidak boleh kosong');
       return false;
     }
 
-    if (!GetUtils.isEmail(emailController.text.trim())) {
+    if (!isEmailValid) {
       _showError('Format email tidak valid');
       return false;
     }
 
-    if (passwordController.text.isEmpty) {
+    if (password.value.isEmpty) {
       _showError('Password tidak boleh kosong');
       return false;
     }
 
     return true;
+  }
+
+  void _handleError(dynamic e) {
+    final errorMessage = e.toString();
+
+    if (errorMessage.contains('Koneksi timeout')) {
+      _showError('Koneksi timeout. Periksa internet Anda.');
+    } else if (errorMessage.contains('Tidak ada koneksi internet')) {
+      _showError('Tidak ada koneksi internet.');
+    } else if (errorMessage.contains('Unauthorized') ||
+        errorMessage.contains('401')) {
+      _showError('Email atau password salah');
+    } else {
+      _showError('Email atau password salah');
+    }
+  }
+
+  void _clearForm() {
+    email.value = '';
+    password.value = '';
+    isPasswordVisible.value = false;
   }
 
   void _showSuccess(String message) {
@@ -110,7 +117,7 @@ class LoginController extends GetxController {
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green[600],
       colorText: Colors.white,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),
       borderRadius: 8,
       icon: const Icon(Icons.check_circle, color: Colors.white),
@@ -133,8 +140,6 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
     super.onClose();
   }
 }

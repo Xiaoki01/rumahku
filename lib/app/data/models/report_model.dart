@@ -43,19 +43,14 @@ class ReportModel {
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
-    // 🆕 Debug log untuk lihat data mentah
     print('📦 Raw JSON photo: ${json['photo']}');
     print('📦 Raw JSON photo_url: ${json['photo_url']}');
 
-    // 🆕 Fix photo URL dari backend
     String? fixedPhotoUrl;
 
-    // Prioritas: gunakan photo_url dulu jika ada
     if (json['photo_url'] != null && json['photo_url'].toString().isNotEmpty) {
       fixedPhotoUrl = AppConstants.fixImageUrl(json['photo_url']);
-    }
-    // Fallback: jika hanya ada photo (filename), build full URL
-    else if (json['photo'] != null && json['photo'].toString().isNotEmpty) {
+    } else if (json['photo'] != null && json['photo'].toString().isNotEmpty) {
       final photoPath = 'uploads/reports/${json['photo']}';
       fixedPhotoUrl = AppConstants.fixImageUrl(photoPath);
     }
@@ -108,9 +103,7 @@ class ReportModel {
     }
   }
 
-  // 🆕 Getter untuk image URL yang sudah fix
   String get imageUrl => photoUrl ?? '';
 
-  // 🆕 Check apakah ada foto
   bool get hasPhoto => imageUrl.isNotEmpty;
 }

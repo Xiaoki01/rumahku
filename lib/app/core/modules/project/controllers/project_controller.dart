@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../dashboard/controllers/dashboard_controller.dart';
 import '../../../../data/services/api_service.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../data/models/project_model.dart';
+import '../../../../data/models/user_model.dart';
 
 class ProjectController extends GetxController {
   final apiService = Get.find<ApiService>();
@@ -13,16 +15,45 @@ class ProjectController extends GetxController {
   final projects = <ProjectModel>[].obs;
   final selectedProject = Rx<ProjectModel?>(null);
 
+  final owners = <UserModel>[].obs;
+  final kepalaProyeks = <UserModel>[].obs;
+  final mandors = <UserModel>[].obs;
+  final isFetchingWorkers = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     fetchProjects();
   }
 
+  Future<void> prepareCreateForm() async {
+    try {
+      isFetchingWorkers.value = true;
+      await Future.wait([
+        _loadWorkersByRole('pengguna', owners),
+        _loadWorkersByRole('kepala_proyek', kepalaProyeks),
+        _loadWorkersByRole('mandor', mandors),
+      ]);
+    } catch (e) {
+      _showError('Gagal memuat daftar personel: ${e.toString()}');
+    } finally {
+      isFetchingWorkers.value = false;
+    }
+  }
+
+  Future<void> _loadWorkersByRole(
+      String role, RxList<UserModel> targetList) async {
+    final response = await apiService.get('/admin/users/by-role?role=$role');
+
+    if (response['status'] == 'success') {
+      final List data = response['data'];
+      targetList.value = data.map((json) => UserModel.fromJson(json)).toList();
+    }
+  }
+
   Future<void> fetchProjects() async {
     try {
       isLoading.value = true;
-
       final response = await apiService.get(AppConstants.projectsEndpoint);
 
       if (response['status'] == 'success') {
@@ -30,7 +61,6 @@ class ProjectController extends GetxController {
             .map((json) => ProjectModel.fromJson(json))
             .toList();
 
-        // Filter berdasarkan role
         projects.value = _filterProjectsByRole(allProjects);
       }
     } catch (e) {
@@ -44,22 +74,16 @@ class ProjectController extends GetxController {
     final user = authService.currentUser.value;
     if (user == null) return [];
 
-    // Admin: Lihat semua project
-    if (authService.isAdmin) {
-      return allProjects;
-    }
+    if (authService.isAdmin) return allProjects;
 
-    // Kepala Proyek: Lihat project yang dia tangani
     if (authService.isKepalaProyek) {
       return allProjects.where((p) => p.kepalaProyekId == user.id).toList();
     }
 
-    // Mandor: Lihat project yang dia tangani
     if (authService.isMandor) {
       return allProjects.where((p) => p.mandorId == user.id).toList();
     }
 
-    // Pengguna: Lihat project milik sendiri
     if (authService.isPengguna) {
       return allProjects.where((p) => p.userId == user.id).toList();
     }
@@ -70,7 +94,6 @@ class ProjectController extends GetxController {
   Future<void> getProjectDetail(String id) async {
     try {
       isLoading.value = true;
-
       final response =
           await apiService.get('${AppConstants.projectsEndpoint}/$id');
 
@@ -85,7 +108,6 @@ class ProjectController extends GetxController {
   }
 
   Future<void> createProject(Map<String, dynamic> data) async {
-    // Hanya Admin yang bisa create project
     if (!authService.isAdmin) {
       _showError('Anda tidak memiliki akses untuk membuat project');
       return;
@@ -93,15 +115,18 @@ class ProjectController extends GetxController {
 
     try {
       isLoading.value = true;
-
       final response =
           await apiService.post(AppConstants.projectsEndpoint, data);
 
       if (response['status'] == 'success') {
-        final projectName = data['name'] ?? 'Project';
-        _showSuccess('Project "$projectName" berhasil dibuat');
+        _showSuccess('Project "${data['name']}" berhasil dibuat');
 
         await fetchProjects();
+
+        if (Get.isRegistered<DashboardController>()) {
+          Get.find<DashboardController>().loadDashboardData();
+        }
+
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back();
       }
@@ -113,7 +138,6 @@ class ProjectController extends GetxController {
   }
 
   Future<void> updateProject(String id, Map<String, dynamic> data) async {
-    // Hanya Admin dan Kepala Proyek yang bisa edit
     if (!authService.isAdmin && !authService.isKepalaProyek) {
       _showError('Anda tidak memiliki akses untuk edit project');
       return;
@@ -121,7 +145,6 @@ class ProjectController extends GetxController {
 
     try {
       isLoading.value = true;
-
       final response =
           await apiService.put('${AppConstants.projectsEndpoint}/$id', data);
 
@@ -129,9 +152,7 @@ class ProjectController extends GetxController {
         final projectName =
             data['name'] ?? selectedProject.value?.name ?? 'Project';
         _showSuccess('Project "$projectName" berhasil diupdate');
-
         await fetchProjects();
-        await Future.delayed(const Duration(milliseconds: 500));
         Get.back();
       }
     } catch (e) {
@@ -142,7 +163,6 @@ class ProjectController extends GetxController {
   }
 
   Future<void> deleteProject(String id) async {
-    // Hanya Admin yang bisa delete
     if (!authService.isAdmin) {
       _showError('Anda tidak memiliki akses untuk menghapus project');
       return;
@@ -150,7 +170,6 @@ class ProjectController extends GetxController {
 
     try {
       final projectName = selectedProject.value?.name ?? 'project ini';
-
       final confirmed = await Get.dialog<bool>(
         AlertDialog(
           title: const Text('Konfirmasi Hapus'),
@@ -158,14 +177,11 @@ class ProjectController extends GetxController {
               'Yakin ingin menghapus project "$projectName"?\n\nData project ini akan dihapus permanen.'),
           actions: [
             TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Batal'),
-            ),
+                onPressed: () => Get.back(result: false),
+                child: const Text('Batal')),
             ElevatedButton(
               onPressed: () => Get.back(result: true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Ya, Hapus'),
             ),
           ],
@@ -175,15 +191,12 @@ class ProjectController extends GetxController {
 
       if (confirmed == true) {
         isLoading.value = true;
-
         final response =
             await apiService.delete('${AppConstants.projectsEndpoint}/$id');
 
         if (response['status'] == 'success') {
           _showWarning('Project "$projectName" berhasil dihapus');
-
           await fetchProjects();
-          await Future.delayed(const Duration(milliseconds: 500));
           Get.back();
         }
       }
@@ -201,9 +214,6 @@ class ProjectController extends GetxController {
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green[600],
       colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
       icon: const Icon(Icons.check_circle, color: Colors.white),
     );
   }
@@ -215,9 +225,6 @@ class ProjectController extends GetxController {
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.orange[600],
       colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
       icon: const Icon(Icons.info, color: Colors.white),
     );
   }
@@ -229,17 +236,12 @@ class ProjectController extends GetxController {
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.red[600],
       colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
       icon: const Icon(Icons.error, color: Colors.white),
     );
   }
 
-  // Check permissions
+  // Permissions Checkers
   bool get canCreate => authService.isAdmin;
-
   bool get canEdit => authService.isAdmin || authService.isKepalaProyek;
-
   bool get canDelete => authService.isAdmin;
 }

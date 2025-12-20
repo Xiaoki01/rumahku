@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 class ImagePickerService extends GetxService {
   final ImagePicker _picker = ImagePicker();
 
-  // Pick image from gallery
   Future<File?> pickImageFromGallery() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -32,7 +31,6 @@ class ImagePickerService extends GetxService {
     }
   }
 
-  // Pick image from camera
   Future<File?> pickImageFromCamera() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -58,7 +56,6 @@ class ImagePickerService extends GetxService {
     }
   }
 
-  // Show picker options with better UI
   Future<File?> showImageSourceDialog() async {
     return await Get.dialog<File?>(
       AlertDialog(

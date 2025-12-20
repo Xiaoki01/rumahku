@@ -14,27 +14,40 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ever(authService.currentUser, (_) => loadDashboardData());
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
     loadDashboardData();
   }
 
   Future<void> loadDashboardData() async {
+    if (authService.token == null || authService.token!.isEmpty) {
+      print('No token found, skipping dashboard load');
+      return;
+    }
+
     try {
       isLoading.value = true;
+      print('Fetching dashboard data...');
 
-      // Load projects berdasarkan role
-      final projectsResponse =
-          await apiService.get(AppConstants.projectsEndpoint);
+      final response = await apiService.get(AppConstants.projectsEndpoint);
 
-      if (projectsResponse['status'] == 'success') {
-        final allProjects = (projectsResponse['data'] as List)
-            .map((json) => ProjectModel.fromJson(json))
-            .toList();
+      if (response['status'] == 'success') {
+        final List rawData = response['data'];
+        final allProjects =
+            rawData.map((json) => ProjectModel.fromJson(json)).toList();
+        projects.assignAll(_filterProjectsByRole(allProjects));
 
-        // Filter projects berdasarkan role
-        projects.value = _filterProjectsByRole(allProjects);
+        print('✅ Dashboard data synchronized: ${projects.length} projects');
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print('Error loading dashboard: $e');
+      if (!e.toString().contains('Unauthorized')) {
+        Get.snackbar('Error', 'Gagal memperbarui dashboard: ${e.toString()}');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -44,22 +57,16 @@ class DashboardController extends GetxController {
     final user = authService.currentUser.value;
     if (user == null) return [];
 
-    // Admin: Lihat semua project
-    if (authService.isAdmin) {
-      return allProjects;
-    }
+    if (authService.isAdmin) return allProjects;
 
-    // Kepala Proyek: Lihat project yang dia tangani
     if (authService.isKepalaProyek) {
       return allProjects.where((p) => p.kepalaProyekId == user.id).toList();
     }
 
-    // Mandor: Lihat project yang dia tangani
     if (authService.isMandor) {
       return allProjects.where((p) => p.mandorId == user.id).toList();
     }
 
-    // Pengguna: Lihat project milik sendiri
     if (authService.isPengguna) {
       return allProjects.where((p) => p.userId == user.id).toList();
     }

@@ -1,5 +1,4 @@
 class AppConstants {
-  // API Configuration
   static const String baseUrl = 'http://10.0.2.2/rumahku-backend/public/api';
   static const String imageBaseUrl = 'http://10.0.2.2/rumahku-backend/public';
 
@@ -14,6 +13,8 @@ class AppConstants {
   static const String projectsEndpoint = '/projects';
   static const String reportsEndpoint = '/reports';
   static const String materialsEndpoint = '/materials';
+
+  static const String adminAddUserEndpoint = '/admin/users';
 
   // User Roles
   static const String roleAdmin = 'admin';
@@ -37,29 +38,21 @@ class AppConstants {
   static const String materialRejected = 'rejected';
   static const String materialDelivered = 'delivered';
 
-  /// Helper method untuk memperbaiki URL Gambar
-  /// Memastikan IP backend diganti ke IP emulator tanpa menduplikasi folder project
   static String fixImageUrl(String? url) {
     if (url == null || url.isEmpty) return '';
 
-    // Debug log untuk memantau proses di terminal
     print('🔧 Original URL: $url');
 
-    // 1. Jika URL dari backend sudah lengkap (dimulai dengan http://192.168.1.100)
-    // Kita hanya mengganti IP-nya saja agar path '/rumahku-backend/public/' tidak dobel
     if (url.startsWith('http://192.168.1.100')) {
       final fixed = url.replaceFirst('http://192.168.1.100', 'http://10.0.2.2');
       print('✅ Fixed URL (IP Replaced): $fixed');
       return fixed;
     }
 
-    // 2. Jika sudah benar menggunakan 10.0.2.2, biarkan saja
     if (url.startsWith('http://10.0.2.2')) {
       return url;
     }
 
-    // 3. Jika hanya berupa nama file (misal: "123.jpg")
-    // Tambahkan base URL dan path folder reports secara manual
     if (!url.startsWith('http')) {
       final cleanPath = url.startsWith('/') ? url.substring(1) : url;
       final fixed = '$imageBaseUrl/uploads/reports/$cleanPath';

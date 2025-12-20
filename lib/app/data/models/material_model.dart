@@ -12,7 +12,6 @@ class MaterialModel {
   final String? createdAt;
   final String? updatedAt;
 
-  // Additional fields from JOIN
   final String? projectName;
   final String? mandorName;
   final String? approvedByName;

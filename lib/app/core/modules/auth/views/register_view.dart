@@ -76,7 +76,7 @@ class RegisterView extends GetView<RegisterController> {
 
               // Name Field
               TextField(
-                controller: controller.nameController,
+                onChanged: controller.updateName,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Nama Lengkap',
@@ -89,7 +89,7 @@ class RegisterView extends GetView<RegisterController> {
 
               // Email Field
               TextField(
-                controller: controller.emailController,
+                onChanged: controller.updateEmail,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -102,7 +102,7 @@ class RegisterView extends GetView<RegisterController> {
 
               // Phone Field
               TextField(
-                controller: controller.phoneController,
+                onChanged: controller.updatePhone,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
                   labelText: 'Nomor Telepon',
@@ -144,7 +144,7 @@ class RegisterView extends GetView<RegisterController> {
                     ],
                   );
                 } else {
-                  // Info Role untuk Public User
+                  // Info Role
                   return Column(
                     children: [
                       Container(
@@ -192,7 +192,7 @@ class RegisterView extends GetView<RegisterController> {
 
               // Password Field
               Obx(() => TextField(
-                    controller: controller.passwordController,
+                    onChanged: controller.updatePassword,
                     obscureText: !controller.isPasswordVisible.value,
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -213,7 +213,7 @@ class RegisterView extends GetView<RegisterController> {
 
               // Confirm Password Field
               Obx(() => TextField(
-                    controller: controller.confirmPasswordController,
+                    onChanged: controller.updateConfirmPassword,
                     obscureText: !controller.isConfirmPasswordVisible.value,
                     decoration: InputDecoration(
                       labelText: 'Konfirmasi Password',

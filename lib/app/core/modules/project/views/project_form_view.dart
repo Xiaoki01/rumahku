@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/project_controller.dart';
 import '../../../../data/models/project_model.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../data/models/user_model.dart';
 
 class ProjectFormView extends StatefulWidget {
   final bool isEdit;
@@ -36,13 +37,6 @@ class _ProjectFormViewState extends State<ProjectFormView> {
     {'value': AppConstants.statusSuspended, 'label': 'Ditangguhkan'},
   ];
 
-  // Dummy users - In real app, fetch from API
-  final List<Map<String, String>> users = [
-    {'id': '2', 'name': 'Budi Santoso', 'role': 'pengguna'},
-    {'id': '3', 'name': 'Agus Kepala', 'role': 'kepala_proyek'},
-    {'id': '4', 'name': 'Joko Mandor', 'role': 'mandor'},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -53,6 +47,10 @@ class _ProjectFormViewState extends State<ProjectFormView> {
     budgetController = TextEditingController();
     startDateController = TextEditingController();
     endDateController = TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.prepareCreateForm();
+    });
 
     if (widget.isEdit) {
       final ProjectModel project = Get.arguments;
@@ -86,327 +84,244 @@ class _ProjectFormViewState extends State<ProjectFormView> {
       appBar: AppBar(
         title: Text(widget.isEdit ? 'Edit Project' : 'Buat Project'),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Project Info Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Informasi Project',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      const SizedBox(height: 16),
+      body: Obx(() {
+        if (controller.isFetchingWorkers.value) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Memuat data personel...'),
+              ],
+            ),
+          );
+        }
 
-                      // Name
-                      TextFormField(
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Nama Project *',
-                          hintText: 'Contoh: Renovasi Rumah Pak Budi',
-                          prefixIcon: Icon(Icons.title),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Nama project tidak boleh kosong';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Description
-                      TextFormField(
-                        controller: descriptionController,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Deskripsi',
-                          hintText: 'Deskripsi detail project',
-                          prefixIcon: Icon(Icons.description),
-                          alignLabelWithHint: true,
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Location
-                      TextFormField(
-                        controller: locationController,
-                        decoration: const InputDecoration(
-                          labelText: 'Lokasi',
-                          hintText: 'Alamat lengkap project',
-                          prefixIcon: Icon(Icons.location_on),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Budget
-                      TextFormField(
-                        controller: budgetController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Anggaran (Rp)',
-                          hintText: '50000000',
-                          prefixIcon: Icon(Icons.attach_money),
-                        ),
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            if (double.tryParse(value) == null) {
-                              return 'Anggaran harus berupa angka';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Timeline Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Timeline',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Start Date
-                      TextFormField(
-                        controller: startDateController,
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Tanggal Mulai *',
-                          prefixIcon: Icon(Icons.calendar_today),
-                        ),
-                        onTap: () async {
-                          final date = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime(2030),
-                          );
-                          if (date != null) {
-                            startDateController.text =
-                                date.toString().split(' ')[0];
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Tanggal mulai tidak boleh kosong';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // End Date
-                      TextFormField(
-                        controller: endDateController,
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Tanggal Selesai',
-                          prefixIcon: Icon(Icons.event),
-                        ),
-                        onTap: () async {
-                          final date = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime(2030),
-                          );
-                          if (date != null) {
-                            endDateController.text =
-                                date.toString().split(' ')[0];
-                          }
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Status
-                      DropdownButtonFormField<String>(
-                        value: selectedStatus,
-                        decoration: const InputDecoration(
-                          labelText: 'Status',
-                          prefixIcon: Icon(Icons.info),
-                        ),
-                        items: statusOptions.map((status) {
-                          return DropdownMenuItem(
-                            value: status['value'],
-                            child: Text(status['label']!),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              selectedStatus = value;
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Team Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tim Proyek',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Owner (Pengguna)
-                      DropdownButtonFormField<String>(
-                        value: selectedUserId,
-                        decoration: const InputDecoration(
-                          labelText: 'Pemilik *',
-                          prefixIcon: Icon(Icons.person),
-                        ),
-                        items: users
-                            .where((u) => u['role'] == 'pengguna')
-                            .map((user) {
-                          return DropdownMenuItem(
-                            value: user['id'],
-                            child: Text(user['name']!),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedUserId = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Pilih pemilik project';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Kepala Proyek
-                      DropdownButtonFormField<String>(
-                        value: selectedKepalaProyekId,
-                        decoration: const InputDecoration(
-                          labelText: 'Kepala Proyek *',
-                          prefixIcon: Icon(Icons.engineering),
-                        ),
-                        items: users
-                            .where((u) => u['role'] == 'kepala_proyek')
-                            .map((user) {
-                          return DropdownMenuItem(
-                            value: user['id'],
-                            child: Text(user['name']!),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedKepalaProyekId = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Pilih kepala proyek';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Mandor
-                      DropdownButtonFormField<String>(
-                        value: selectedMandorId,
-                        decoration: const InputDecoration(
-                          labelText: 'Mandor *',
-                          prefixIcon: Icon(Icons.construction),
-                        ),
-                        items: users
-                            .where((u) => u['role'] == 'mandor')
-                            .map((user) {
-                          return DropdownMenuItem(
-                            value: user['id'],
-                            child: Text(user['name']!),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedMandorId = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Pilih mandor';
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Submit Button
-              Obx(() => ElevatedButton(
-                    onPressed: controller.isLoading.value ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+        return Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSectionCard(
+                  title: 'Informasi Project',
+                  children: [
+                    _buildTextField(
+                      controller: nameController,
+                      label: 'Nama Project *',
+                      icon: Icons.title,
+                      validator: (v) =>
+                          v!.isEmpty ? 'Nama project wajib diisi' : null,
                     ),
-                    child: controller.isLoading.value
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            widget.isEdit ? 'Update Project' : 'Buat Project',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                  )),
-            ],
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: descriptionController,
+                      label: 'Deskripsi',
+                      icon: Icons.description,
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: locationController,
+                      label: 'Lokasi',
+                      icon: Icons.location_on,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: budgetController,
+                      label: 'Anggaran (Rp)',
+                      icon: Icons.attach_money,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Timeline Section
+                _buildSectionCard(
+                  title: 'Timeline & Status',
+                  children: [
+                    _buildDatePicker(
+                      controller: startDateController,
+                      label: 'Tanggal Mulai *',
+                      icon: Icons.calendar_today,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDatePicker(
+                      controller: endDateController,
+                      label: 'Tanggal Selesai',
+                      icon: Icons.event,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedStatus,
+                      decoration: const InputDecoration(
+                        labelText: 'Status',
+                        prefixIcon: Icon(Icons.info),
+                      ),
+                      items: statusOptions
+                          .map((s) => DropdownMenuItem(
+                                value: s['value'],
+                                child: Text(s['label']!),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setState(() => selectedStatus = v!),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Team Section
+                _buildSectionCard(
+                  title: 'Tim Proyek',
+                  children: [
+                    // Dropdown Pemilik
+                    _buildUserDropdown(
+                      label: 'Pemilik *',
+                      icon: Icons.person,
+                      value: selectedUserId,
+                      items: controller.owners,
+                      onChanged: (v) => setState(() => selectedUserId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    // Dropdown Kepala Proyek
+                    _buildUserDropdown(
+                      label: 'Kepala Proyek *',
+                      icon: Icons.engineering,
+                      value: selectedKepalaProyekId,
+                      items: controller.kepalaProyeks,
+                      onChanged: (v) =>
+                          setState(() => selectedKepalaProyekId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    // Dropdown Mandor
+                    _buildUserDropdown(
+                      label: 'Mandor *',
+                      icon: Icons.construction,
+                      value: selectedMandorId,
+                      items: controller.mandors,
+                      onChanged: (v) => setState(() => selectedMandorId = v),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Submit Button
+                ElevatedButton(
+                  onPressed: controller.isLoading.value ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: controller.isLoading.value
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(widget.isEdit ? 'Update Project' : 'Buat Project'),
+                ),
+              ],
+            ),
           ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildSectionCard(
+      {required String title, required List<Widget> children}) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ...children,
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _buildDatePicker({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2030),
+        );
+        if (date != null) {
+          controller.text = date.toString().split(' ')[0];
+        }
+      },
+    );
+  }
+
+  Widget _buildUserDropdown({
+    required String label,
+    required IconData icon,
+    required String? value,
+    required List<UserModel> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: items.any((u) => u.id == value) ? value : null,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      items: items
+          .map((user) => DropdownMenuItem(
+                value: user.id,
+                child: Text(user.name),
+              ))
+          .toList(),
+      onChanged: onChanged,
+      validator: (v) => v == null ? 'Wajib dipilih' : null,
     );
   }
 

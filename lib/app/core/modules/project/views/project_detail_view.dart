@@ -120,7 +120,6 @@ class ProjectDetailView extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Quick Actions untuk role tertentu
                   _buildQuickActions(authService, project),
                 ],
               ),
@@ -143,7 +142,7 @@ class ProjectDetailView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // Admin & Kepala Proyek bisa lihat laporan dan material
+        // Admin & Kepala Proyek
         if (authService.isAdmin || authService.isKepalaProyek) ...[
           ListTile(
             leading: const Icon(Icons.assignment),
@@ -163,7 +162,7 @@ class ProjectDetailView extends StatelessWidget {
           ),
         ],
 
-        // Mandor bisa input laporan dan request material
+        // Mandor material
         if (authService.isMandor) ...[
           ListTile(
             leading: const Icon(Icons.assignment_add),
@@ -183,7 +182,7 @@ class ProjectDetailView extends StatelessWidget {
           ),
         ],
 
-        // Pengguna hanya bisa lihat laporan (read-only)
+        // Pengguna role
         if (authService.isPengguna) ...[
           ListTile(
             leading: const Icon(Icons.assignment),

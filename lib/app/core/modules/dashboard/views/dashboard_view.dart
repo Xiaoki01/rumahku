@@ -23,7 +23,7 @@ class DashboardView extends GetView<DashboardController> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading.value && controller.projects.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -31,10 +31,10 @@ class DashboardView extends GetView<DashboardController> {
           onRefresh: controller.loadDashboardData,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Greeting Card with Enhanced Design
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -81,9 +81,7 @@ class DashboardView extends GetView<DashboardController> {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -100,10 +98,7 @@ class DashboardView extends GetView<DashboardController> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Statistics Cards
                 Row(
                   children: [
                     Expanded(
@@ -125,19 +120,13 @@ class DashboardView extends GetView<DashboardController> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-
-                // Feature Highlight - Photo Upload
                 if (authService.isMandor) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.purple[50]!,
-                          Colors.blue[50]!,
-                        ],
+                        colors: [Colors.purple[50]!, Colors.blue[50]!],
                       ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.purple[200]!),
@@ -150,11 +139,8 @@ class DashboardView extends GetView<DashboardController> {
                             color: Colors.purple,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          child: const Icon(Icons.camera_alt,
+                              color: Colors.white, size: 28),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -174,9 +160,7 @@ class DashboardView extends GetView<DashboardController> {
                                   const SizedBox(width: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: Colors.amber,
                                       borderRadius: BorderRadius.circular(4),
@@ -184,30 +168,22 @@ class DashboardView extends GetView<DashboardController> {
                                     child: const Text(
                                       'NEW',
                                       style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                          fontSize: 10,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Upload Foto Lapangan',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              const Text('Upload Foto Lapangan',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
                               const SizedBox(height: 4),
-                              Text(
-                                'Dokumentasi pekerjaan dengan foto',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
+                              Text('Dokumentasi pekerjaan dengan foto',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.grey[700])),
                             ],
                           ),
                         ),
@@ -218,21 +194,17 @@ class DashboardView extends GetView<DashboardController> {
                   ),
                   const SizedBox(height: 24),
                 ],
-
-                // Quick Actions
                 _buildQuickActions(authService),
-
                 const SizedBox(height: 24),
-
-                // Recent Projects Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Project Terbaru',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     TextButton(
                       onPressed: () => Get.toNamed(Routes.PROJECT_LIST),
@@ -241,24 +213,17 @@ class DashboardView extends GetView<DashboardController> {
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Projects List
                 if (controller.projects.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),
                       child: Column(
                         children: [
-                          Icon(
-                            Icons.folder_open,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
+                          Icon(Icons.folder_open,
+                              size: 64, color: Colors.grey[400]),
                           const SizedBox(height: 16),
-                          Text(
-                            'Belum ada project',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
+                          Text('Belum ada project',
+                              style: TextStyle(color: Colors.grey[600])),
                         ],
                       ),
                     ),
@@ -274,55 +239,42 @@ class DashboardView extends GetView<DashboardController> {
                         margin: const EdgeInsets.only(bottom: 12),
                         elevation: 2,
                         child: InkWell(
-                          onTap: () => Get.toNamed(
-                            Routes.PROJECT_DETAIL,
-                            arguments: project,
-                          ),
+                          onTap: () => Get.toNamed(Routes.PROJECT_DETAIL,
+                              arguments: project),
                           borderRadius: BorderRadius.circular(12),
                           child: Padding(
                             padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primaryContainer,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(Icons.folder, size: 20),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            project.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          if (project.location != null)
-                                            Text(
-                                              project.location!,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    StatusBadge(status: project.status),
-                                  ],
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.folder, size: 20),
                                 ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(project.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16)),
+                                      if (project.location != null)
+                                        Text(project.location!,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600])),
+                                    ],
+                                  ),
+                                ),
+                                StatusBadge(status: project.status),
                               ],
                             ),
                           ),
@@ -345,9 +297,8 @@ class DashboardView extends GetView<DashboardController> {
       children: [
         Text(
           'Menu Cepat',
-          style: Get.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style:
+              Get.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -403,7 +354,6 @@ class DashboardView extends GetView<DashboardController> {
         label: const Text('Project Baru'),
       );
     }
-
     if (authService.isMandor) {
       return FloatingActionButton.extended(
         onPressed: () => Get.toNamed(Routes.REPORT_CREATE),
@@ -412,7 +362,6 @@ class DashboardView extends GetView<DashboardController> {
         backgroundColor: Colors.purple,
       );
     }
-
     return null;
   }
 }
@@ -423,12 +372,11 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
+  const _StatCard(
+      {required this.title,
+      required this.value,
+      required this.icon,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -441,29 +389,22 @@ class _StatCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              color.withOpacity(0.1),
-              color.withOpacity(0.05),
-            ],
+            colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
           ),
         ),
         child: Column(
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-            ),
+            Text(value,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 4),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
+            Text(title,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -477,12 +418,11 @@ class _QuickActionCard extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+  const _QuickActionCard(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -498,22 +438,16 @@ class _QuickActionCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                color.withOpacity(0.1),
-                color.withOpacity(0.05),
-              ],
+              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
             ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                    color: color, borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, size: 24, color: Colors.white),
               ),
               const SizedBox(height: 6),
@@ -522,9 +456,7 @@ class _QuickActionCard extends StatelessWidget {
                   label,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 11, fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
 
   # State Management & Navigation
-  get: ^4.6.6
+  get: ^4.7.3
   get_storage: ^2.1.1
 
   # HTTP & API
@@ -21,14 +21,14 @@ dependencies:
   cupertino_icons: ^1.0.6
   intl: ^0.19.0
 
-  # Image Picker - FITUR UNGGULAN
+  # Image Picker
   image_picker: ^1.0.7
   permission_handler: ^11.0.1
   
-  # Optional: Permission handler (jika diperlukan untuk iOS)
+  # Optional: Permission handler
   # permission_handler: ^11.2.0
 
-  # Optional: Jika mau upload ke server
+  # Optional:
   # dio: ^5.4.0
   # http_parser: ^4.0.2
 
@@ -40,7 +40,3 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  # Uncomment jika ada assets
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/

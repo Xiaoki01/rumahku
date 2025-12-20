@@ -23,7 +23,7 @@ class MaterialDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with Status
+            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -198,7 +198,7 @@ class MaterialDetailView extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Action Buttons (for Kepala Proyek/Admin)
+                  // Action Buttons
                   if ((authService.isKepalaProyek || authService.isAdmin) &&
                       material.status == 'pending') ...[
                     Row(
@@ -258,7 +258,7 @@ class MaterialDetailView extends StatelessWidget {
                     ),
                   ],
 
-                  // Status Info for non-pending materials
+                  // Status Info
                   if (material.status != 'pending') ...[
                     Container(
                       padding: const EdgeInsets.all(16),

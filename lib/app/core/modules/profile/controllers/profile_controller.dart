@@ -28,7 +28,6 @@ class ProfileController extends GetxController {
         user.value = UserModel.fromJson(response['data']);
       }
     } catch (e) {
-      // Use cached user from auth service if API fails
       user.value = authService.currentUser.value;
       _showError('Gagal memuat profile, menampilkan data tersimpan');
     } finally {

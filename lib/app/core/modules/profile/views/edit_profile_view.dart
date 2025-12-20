@@ -89,7 +89,7 @@ class EditProfileView extends GetView<EditProfileController> {
 
               const SizedBox(height: 16),
 
-              // Role (Read Only)
+              // Role
               TextFormField(
                 initialValue: controller.user.value?.roleDisplay ?? '',
                 decoration: InputDecoration(

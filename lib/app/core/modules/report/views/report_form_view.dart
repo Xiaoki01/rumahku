@@ -14,7 +14,7 @@ class ReportFormView extends StatelessWidget {
     final projectController = Get.put(ProjectController());
     final authService = Get.find<AuthService>();
 
-    // Check if user is mandor
+    // Check
     if (!authService.isMandor) {
       return Scaffold(
         appBar: AppBar(title: const Text('Buat Laporan')),
@@ -34,7 +34,6 @@ class ReportFormView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Info Card - FIXED: Removed Catatan Penting wrapper
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
@@ -225,7 +224,7 @@ class ReportFormView extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Photo Upload Section - FITUR UNGGULAN
+            // Photo Upload Section
             _buildSectionTitle('Foto Lapangan'),
             const SizedBox(height: 8),
 
@@ -271,7 +270,7 @@ class ReportFormView extends StatelessWidget {
                 );
               }
 
-              // Empty state - FIXED: Proper image icon
+              // Empty state
               return Column(
                 children: [
                   Container(
@@ -329,7 +328,7 @@ class ReportFormView extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Info about photo upload - FIXED: Better layout
+            // Info photo
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

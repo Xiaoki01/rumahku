@@ -36,10 +36,9 @@ class ReportController extends GetxController {
     super.onClose();
   }
 
-  // Pick image from gallery or camera - FIXED
+  // Pick image
   Future<void> pickImage() async {
     try {
-      // Show dialog to choose source
       final ImageSource? source = await Get.dialog<ImageSource>(
         AlertDialog(
           title: const Text('Pilih Sumber Foto'),
@@ -89,7 +88,7 @@ class ReportController extends GetxController {
 
       if (source == null) return;
 
-      // Pick image with proper error handling
+      // Pick image
       try {
         final XFile? pickedFile = await _picker.pickImage(
           source: source,
@@ -145,7 +144,7 @@ class ReportController extends GetxController {
     }
   }
 
-  // Remove selected image with confirmation
+  // Remove selected image
   Future<void> removeImage() async {
     if (selectedImage.value == null) return;
 
@@ -186,7 +185,7 @@ class ReportController extends GetxController {
     }
   }
 
-  // Fetch reports by project dengan filter role
+  // Fetch reports
   Future<void> fetchReportsByProject(String projectId) async {
     try {
       isLoading.value = true;
@@ -265,7 +264,7 @@ class ReportController extends GetxController {
     }
   }
 
-  // Create report (Mandor only) - WITH PHOTO SUPPORT & CONFIRMATION
+  // Create report
   Future<void> createReport() async {
     if (!authService.isMandor) {
       Get.snackbar(
@@ -283,7 +282,7 @@ class ReportController extends GetxController {
 
     if (!_validateForm()) return;
 
-    // Konfirmasi sebelum submit
+    // Konfirmasi
     final confirm = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Konfirmasi Laporan'),
@@ -340,7 +339,7 @@ class ReportController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Prepare data
+      // Prepare
       final data = {
         'project_id': selectedProject.value!.id,
         'date': dateController.text,
@@ -353,7 +352,6 @@ class ReportController extends GetxController {
             int.parse(jumlahTenagaKerjaController.text).toString(),
       };
 
-      // Gunakan postMultipart jika ada foto, atau post biasa jika tidak ada
       final response = selectedImage.value != null
           ? await apiService.postMultipart(
               AppConstants.reportsEndpoint,
@@ -403,7 +401,7 @@ class ReportController extends GetxController {
     }
   }
 
-  // Helper widget for confirmation dialog
+  // Helper widget
   Widget _buildConfirmationRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -432,7 +430,7 @@ class ReportController extends GetxController {
     );
   }
 
-  // Verify report (Kepala Proyek only) with enhanced confirmation
+  // Verify report
   Future<void> verifyReport(String id) async {
     if (!authService.isKepalaProyek) {
       Get.snackbar(
@@ -524,9 +522,8 @@ class ReportController extends GetxController {
     }
   }
 
-  // Cancel form with confirmation
+  // Cancel form
   Future<bool> cancelForm() async {
-    // Check if form has data
     final hasData = dateController.text.isNotEmpty ||
         progressController.text.isNotEmpty ||
         descriptionController.text.isNotEmpty ||
@@ -535,7 +532,7 @@ class ReportController extends GetxController {
         selectedImage.value != null;
 
     if (!hasData) {
-      return true; // No data, can close directly
+      return true;
     }
 
     final confirm = await Get.dialog<bool>(
@@ -572,7 +569,7 @@ class ReportController extends GetxController {
     return false;
   }
 
-  // Get reports count by status
+  // Get reports
   int get totalReports => reports.length;
 
   int get pendingReports =>
@@ -581,7 +578,7 @@ class ReportController extends GetxController {
   int get verifiedReports =>
       reports.where((r) => r.status == AppConstants.reportDiverifikasi).length;
 
-  // Calculate average progress
+  // Calculate progress
   double get averageProgress {
     if (reports.isEmpty) return 0.0;
     final total = reports.fold<double>(
@@ -733,7 +730,6 @@ class ReportController extends GetxController {
     selectedImage.value = null;
   }
 
-  // Check permissions
   bool get canVerify => authService.isKepalaProyek;
 
   bool get canCreateReport => authService.isMandor;

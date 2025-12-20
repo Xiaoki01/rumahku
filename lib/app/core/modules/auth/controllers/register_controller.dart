@@ -8,16 +8,16 @@ class RegisterController extends GetxController {
   final apiService = Get.find<ApiService>();
   final authService = Get.find<AuthService>();
 
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final phoneController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+  final name = ''.obs;
+  final email = ''.obs;
+  final phone = ''.obs;
+  final password = ''.obs;
+  final confirmPassword = ''.obs;
 
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
   final isConfirmPasswordVisible = false.obs;
-  final selectedRole = 'pengguna'.obs; // Default role untuk public user
+  final selectedRole = 'pengguna'.obs;
   final isAdminMode = false.obs;
 
   final roles = [
@@ -27,25 +27,18 @@ class RegisterController extends GetxController {
     {'value': 'mandor', 'label': 'Mandor'},
   ];
 
+  void updateName(String value) => name.value = value;
+  void updateEmail(String value) => email.value = value;
+  void updatePhone(String value) => phone.value = value;
+  void updatePassword(String value) => password.value = value;
+  void updateConfirmPassword(String value) => confirmPassword.value = value;
+
   @override
   void onInit() {
     super.onInit();
-    // Cek apakah dipanggil dari admin atau public
     isAdminMode.value = authService.isLoggedIn;
 
-    // Jika admin mode, default role tetap pengguna
-    // Jika public mode, force role ke pengguna
     selectedRole.value = 'pengguna';
-  }
-
-  @override
-  void onClose() {
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.onClose();
   }
 
   void togglePasswordVisibility() {
@@ -57,10 +50,8 @@ class RegisterController extends GetxController {
   }
 
   Future<void> register() async {
-    // Validasi
     if (!_validateForm()) return;
 
-    // Konfirmasi sebelum register
     final roleLabel = roles.firstWhere(
       (role) =>
           role['value'] ==
@@ -81,10 +72,10 @@ class RegisterController extends GetxController {
                 ? 'Apakah Anda yakin ingin menambahkan akun dengan data berikut?'
                 : 'Apakah Anda yakin ingin mendaftar dengan data berikut?'),
             const SizedBox(height: 16),
-            _buildConfirmationRow('Nama', nameController.text.trim()),
-            _buildConfirmationRow('Email', emailController.text.trim()),
-            if (phoneController.text.trim().isNotEmpty)
-              _buildConfirmationRow('Telepon', phoneController.text.trim()),
+            _buildConfirmationRow('Nama', name.value.trim()),
+            _buildConfirmationRow('Email', email.value.trim()),
+            if (phone.value.trim().isNotEmpty)
+              _buildConfirmationRow('Telepon', phone.value.trim()),
             if (isAdminMode.value)
               _buildConfirmationRow('Role', roleLabel.toString()),
           ],
@@ -109,44 +100,37 @@ class RegisterController extends GetxController {
       isLoading.value = true;
 
       final data = {
-        'name': nameController.text.trim(),
-        'email': emailController.text.trim(),
-        'phone': phoneController.text.trim(),
-        'password': passwordController.text,
-        'role': isAdminMode.value
-            ? selectedRole.value // Admin bisa pilih role
-            : 'pengguna', // Public user fixed ke "pengguna"
+        'name': name.value.trim(),
+        'email': email.value.trim(),
+        'phone': phone.value.trim(),
+        'password': password.value,
+        'role': isAdminMode.value ? selectedRole.value : 'pengguna',
       };
 
+      final endpoint = isAdminMode.value
+          ? AppConstants.adminAddUserEndpoint
+          : AppConstants.registerEndpoint;
+
       final response = await apiService.post(
-        AppConstants.registerEndpoint,
+        endpoint,
         data,
       );
 
       if (response['status'] == 'success') {
         _showSuccess(
           isAdminMode.value
-              ? 'Akun ${nameController.text.trim()} berhasil ditambahkan'
+              ? 'Akun ${name.value.trim()} berhasil ditambahkan'
               : 'Registrasi berhasil! Silakan login dengan akun Anda',
         );
 
-        // Clear form
-        nameController.clear();
-        emailController.clear();
-        phoneController.clear();
-        passwordController.clear();
-        confirmPasswordController.clear();
-        selectedRole.value = 'pengguna';
+        _clearForm();
 
-        // Delay sedikit agar notifikasi terbaca
         await Future.delayed(const Duration(milliseconds: 500));
 
         // Navigate
         if (isAdminMode.value) {
-          // Jika admin mode, kembali ke profile
           Get.back();
         } else {
-          // Jika public mode, kembali ke login
           Get.back();
         }
       } else {
@@ -160,37 +144,48 @@ class RegisterController extends GetxController {
   }
 
   bool _validateForm() {
-    if (nameController.text.trim().isEmpty) {
+    if (name.value.trim().isEmpty) {
       _showError('Nama lengkap tidak boleh kosong');
       return false;
     }
 
-    if (emailController.text.trim().isEmpty) {
+    if (email.value.trim().isEmpty) {
       _showError('Email tidak boleh kosong');
       return false;
     }
 
-    if (!GetUtils.isEmail(emailController.text.trim())) {
+    if (!GetUtils.isEmail(email.value.trim())) {
       _showError('Format email tidak valid');
       return false;
     }
 
-    if (passwordController.text.isEmpty) {
+    if (password.value.isEmpty) {
       _showError('Password tidak boleh kosong');
       return false;
     }
 
-    if (passwordController.text.length < 6) {
+    if (password.value.length < 6) {
       _showError('Password minimal 6 karakter');
       return false;
     }
 
-    if (passwordController.text != confirmPasswordController.text) {
+    if (password.value != confirmPassword.value) {
       _showError('Konfirmasi password tidak cocok');
       return false;
     }
 
     return true;
+  }
+
+  void _clearForm() {
+    name.value = '';
+    email.value = '';
+    phone.value = '';
+    password.value = '';
+    confirmPassword.value = '';
+    selectedRole.value = 'pengguna';
+    isPasswordVisible.value = false;
+    isConfirmPasswordVisible.value = false;
   }
 
   Widget _buildConfirmationRow(String label, String value) {
@@ -240,5 +235,10 @@ class RegisterController extends GetxController {
       borderRadius: 8,
       icon: const Icon(Icons.error, color: Colors.white),
     );
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
   }
 }

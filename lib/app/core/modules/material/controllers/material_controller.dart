@@ -14,7 +14,6 @@ class MaterialController extends GetxController {
   final materials = <MaterialModel>[].obs;
   final selectedMaterial = Rx<MaterialModel?>(null);
 
-  // Form Controllers
   final materialNameController = TextEditingController();
   final quantityController = TextEditingController();
   final unitController = TextEditingController();
@@ -30,7 +29,6 @@ class MaterialController extends GetxController {
     super.onClose();
   }
 
-  // Fetch materials by project dengan filter role
   Future<void> fetchMaterialsByProject(String projectId) async {
     try {
       isLoading.value = true;
@@ -44,7 +42,6 @@ class MaterialController extends GetxController {
             .map((json) => MaterialModel.fromJson(json))
             .toList();
 
-        // Filter berdasarkan role jika perlu
         materials.value = _filterMaterialsByRole(allMaterials);
       }
     } catch (e) {
@@ -58,17 +55,14 @@ class MaterialController extends GetxController {
     final user = authService.currentUser.value;
     if (user == null) return [];
 
-    // Admin & Kepala Proyek: Lihat semua material
     if (authService.isAdmin || authService.isKepalaProyek) {
       return allMaterials;
     }
 
-    // Mandor: Lihat material yang dia request
     if (authService.isMandor) {
       return allMaterials.where((m) => m.mandorId == user.id).toList();
     }
 
-    // Pengguna: Lihat semua material dari project mereka (read-only)
     if (authService.isPengguna) {
       return allMaterials;
     }
@@ -95,7 +89,7 @@ class MaterialController extends GetxController {
     }
   }
 
-  // Create material request (Mandor only)
+  // Create material
   Future<void> createMaterialRequest() async {
     if (!authService.isMandor) {
       _showError('Hanya mandor yang dapat request material');
@@ -135,7 +129,7 @@ class MaterialController extends GetxController {
     }
   }
 
-  // Approve material (Kepala Proyek / Admin ONLY)
+  // Approve material
   Future<void> approveMaterial(String id) async {
     if (!authService.isKepalaProyek && !authService.isAdmin) {
       _showError(
@@ -177,7 +171,7 @@ class MaterialController extends GetxController {
 
           await getMaterialDetail(id);
 
-          // Refresh list if project selected
+          // Refresh list
           if (selectedProject.value != null) {
             await fetchMaterialsByProject(selectedProject.value!.id);
           }
@@ -190,7 +184,7 @@ class MaterialController extends GetxController {
     }
   }
 
-  // Reject material (Kepala Proyek / Admin ONLY)
+  // Reject material
   Future<void> rejectMaterial(String id) async {
     if (!authService.isKepalaProyek && !authService.isAdmin) {
       _showError('Hanya kepala proyek atau admin yang dapat menolak material');
@@ -231,7 +225,7 @@ class MaterialController extends GetxController {
 
           await getMaterialDetail(id);
 
-          // Refresh list if project selected
+          // Refresh list
           if (selectedProject.value != null) {
             await fetchMaterialsByProject(selectedProject.value!.id);
           }
@@ -325,7 +319,6 @@ class MaterialController extends GetxController {
     );
   }
 
-  // Check permissions
   bool get canApproveReject =>
       authService.isAdmin || authService.isKepalaProyek;
 

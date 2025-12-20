@@ -5,7 +5,14 @@ import '../controllers/register_controller.dart';
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<LoginController>(() => LoginController());
-    Get.lazyPut<RegisterController>(() => RegisterController());
+    Get.put<LoginController>(
+      LoginController(),
+      tag: 'login',
+    );
+
+    Get.put<RegisterController>(
+      RegisterController(),
+      tag: 'register',
+    );
   }
 }

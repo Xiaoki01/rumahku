@@ -13,7 +13,6 @@ class ProjectModel {
   final String? createdAt;
   final String? updatedAt;
 
-  // Additional fields from JOIN
   final String? ownerName;
   final String? ownerEmail;
   final String? ownerPhone;

@@ -19,7 +19,7 @@ class LoginView extends GetView<LoginController> {
 
               // Logo & Title
               Icon(
-                Icons.home_work,
+                Icons.logo_dev,
                 size: 80,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -43,20 +43,24 @@ class LoginView extends GetView<LoginController> {
               const SizedBox(height: 48),
 
               // Email Field
-              TextField(
-                controller: controller.emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                ),
-              ),
+              Obx(() => TextField(
+                    onChanged: controller.updateEmail,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
+                      errorText: controller.email.value.isNotEmpty &&
+                              !controller.isEmailValid
+                          ? 'Format email tidak valid'
+                          : null,
+                    ),
+                  )),
 
               const SizedBox(height: 16),
 
               // Password Field
               Obx(() => TextField(
-                    controller: controller.passwordController,
+                    onChanged: controller.updatePassword,
                     obscureText: !controller.isPasswordVisible.value,
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -92,7 +96,7 @@ class LoginView extends GetView<LoginController> {
 
               const SizedBox(height: 16),
 
-              // Register Link untuk Public User
+              // Register Link
               TextButton(
                 onPressed: () => Get.toNamed(Routes.REGISTER),
                 child: const Text(
@@ -100,97 +104,9 @@ class LoginView extends GetView<LoginController> {
               ),
 
               const SizedBox(height: 24),
-
-              // Demo Credentials
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.info_outline,
-                            size: 18, color: Colors.grey[700]),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Demo Login:',
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _DemoCredential(
-                      role: 'Admin',
-                      email: 'admin@rumahku.com',
-                    ),
-                    _DemoCredential(
-                      role: 'Pemilik Bangunan',
-                      email: 'budi@gmail.com',
-                    ),
-                    _DemoCredential(
-                      role: 'Kepala Proyek',
-                      email: 'agus@gmail.com',
-                    ),
-                    _DemoCredential(
-                      role: 'Mandor',
-                      email: 'joko@gmail.com',
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Password: password',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DemoCredential extends StatelessWidget {
-  final String role;
-  final String email;
-
-  const _DemoCredential({
-    required this.role,
-    required this.email,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              role,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-          Text(
-            ': $email',
-            style: TextStyle(color: Colors.grey[700]),
-          ),
-        ],
       ),
     );
   }
